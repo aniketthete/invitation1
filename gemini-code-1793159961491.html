@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vihaan & Myra — The Royal Wedding Celebration</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        forest: {
+                            900: '#1b3022',
+                            800: '#263d2d',
+                            700: '#34523e',
+                        },
+                        cream: {
+                            DEFAULT: '#fbf6eb',
+                            50: '#fffdf9',
+                            100: '#f8f1e2',
+                            200: '#f1e4cb',
+                        },
+                        gold: {
+                            DEFAULT: '#b9995e',
+                            light: '#d4b77b',
+                            dark: '#92743c',
+                        },
+                        sage: {
+                            DEFAULT: '#dce3d1',
+                            dark: '#b6c2a8',
+                        }
+                    },
+                    fontFamily: {
+                        serif: ['Playfair Display', 'serif'],
+                        sans: ['Montserrat', 'sans-serif'],
+                        script: ['Great Vibes', 'cursive']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Montserrat:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Cinzel:wght@500;700;900&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Lenis Smooth Scroll -->
+    <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.29/bundled/lenis.min.js"></script>
+
+    <style>
+        body {
+            background-color: #fbf6eb;
+            color: #263d2d;
+            font-family: 'Montserrat', sans-serif;
+            overflow-x: hidden;
+        }
+
+        .gold-gradient-text {
+            background: linear-gradient(135deg, #d4b77b 0%, #b9995e 50%, #92743c 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .gold-gradient-bg {
+            background: linear-gradient(135deg, #d4b77b 0%, #b9995e 50%, #92743c 100%);
+        }
+
+        .royal-border {
+            border: 2px solid #b9995e;
+            position: relative;
+        }
+        .royal-border::before {
+            content: '';
+            position: absolute;
+            inset: 4px;
+            border: 1px solid rgba(185, 153, 94, 0.4);
+            pointer-events: none;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f8f1e2;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #b9995e;
+            border-radius: 4px;
+        }
+
+        /* Falling Flower Petals & Ribbons Canvas */
+        #fx-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 40;
+        }
+
+        /* Polaroid Tilt & Shadow */
+        .polaroid {
+            background: #ffffff;
+            padding: 16px 16px 48px 16px;
+            box-shadow: 0 20px 40px rgba(38, 61, 45, 0.15);
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+        }
+        .polaroid:hover {
+            transform: translateY(-8px) rotate(1deg) scale(1.02);
+            box-shadow: 0 30px 60px rgba(38, 61, 45, 0.25);
+        }
+
+        /* Hanging Floral Garlands Top Bar */
+        .garland-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            pointer-events: none;
+            z-index: 45;
+            display: flex;
+            justify-content: space-around;
+            overflow: hidden;
+        }
+        .flower-string {
+            width: 30px;
+            height: 100%;
+            background: repeating-linear-gradient(to bottom, #ff9933 0px, #ff9933 100px, #ffffff 10px, #ffffff 15px, #e2c074 15px, #e2c074 25px);
+            animation: sway 4s ease-in-out infinite alternate;
+            transform-origin: top center;
+            opacity: 0.85;
+        }
+        .flower-string:nth-child(even) {
+            animation-duration: 5s;
+            animation-delay: -1s;
+        }
+        @keyframes sway {
+            0% { transform: rotate(-3deg); }
+            100% { transform: rotate(3deg); }
+        }
+
+        /* --- EXACT TEMPLE DOOR 3D ANIMATED OVERLAY --- */
+        #door-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #111;
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            transition: opacity 0.8s ease 0.4s, visibility 0.8s ease 0.4s;
+        }
+
+        #door-overlay.opened {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .door-container {
+            position: relative;
+            width: 100%;
+            max-width: 580px;
+            height: 100vh;
+            perspective: 1800px;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 60px rgba(0,0,0,0.9);
+        }
+
+        .door-wing {
+            position: absolute;
+            top: 0;
+            width: 50%;
+            height: 100%;
+            /* Uses your uploaded temple door image split precisely down the middle */
+            background-image: url('door2.jpg');
+            background-size: 200% 100%;
+            background-repeat: no-repeat;
+            transition: transform 2.2s cubic-bezier(0.77, 0, 0.175, 1);
+            box-shadow: inset 0 0 50px rgba(0,0,0,0.85);
+            z-index: 2;
+            cursor: pointer;
+        }
+
+        .door-left {
+            left: 0;
+            background-position: left center;
+            transform-origin: left;
+            border-right: 2px solid rgba(185, 153, 94, 0.3);
+        }
+
+        .door-right {
+            right: 0;
+            background-position: right center;
+            transform-origin: right;
+            border-left: 2px solid rgba(185, 153, 94, 0.3);
+        }
+
+        #door-overlay.opened .door-left {
+            transform: rotateY(-112deg);
+        }
+
+        #door-overlay.opened .door-right {
+            transform: rotateY(112deg);
+        }
+
+        .door-content-overlay {
+            position: absolute;
+            z-index: 10;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 50px 20px;
+            background: rgba(0,0,0,0.25);
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+
+        #door-overlay.opened .door-content-overlay {
+            opacity: 0;
+        }
+
+        .toran-banner {
+            font-family: 'Cinzel', serif;
+            font-size: 1.3rem;
+            color: #F4E8C1;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.9);
+            letter-spacing: 3px;
+            text-align: center;
+        }
+
+        .center-card-box {
+            background: rgba(251, 246, 235, 0.95);
+            backdrop-filter: blur(8px);
+            padding: 30px 25px;
+            border-radius: 12px;
+            text-align: center;
+            border: 2px solid #b9995e;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.7);
+            max-width: 85%;
+            pointer-events: auto;
+        }
+
+        .center-card-box h3 {
+            font-family: 'Cinzel', serif;
+            font-size: 11px;
+            letter-spacing: 3px;
+            color: #b9995e;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .center-card-box h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 34px;
+            color: #263d2d;
+            margin-bottom: 8px;
+        }
+
+        .center-card-box p {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 12px;
+            color: #6b7468;
+            font-style: italic;
+        }
+
+        .open-btn {
+            pointer-events: auto;
+            background: linear-gradient(135deg, #D4AF37, #AA771C);
+            color: #fff;
+            border: none;
+            padding: 16px 36px;
+            font-family: 'Cinzel', serif;
+            font-size: 0.95rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.5);
+            text-transform: uppercase;
+            transition: transform 0.3s, box-shadow 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .open-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 12px 35px rgba(212, 175, 55, 0.7);
+        }
+
+        /* Kalash & Tutari float animations */
+        @keyframes floatSlow {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(2deg); }
+        }
+        .floating-element {
+            animation: floatSlow 5s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body class="selection:bg-gold selection:text-forest-900">
+
+    <!-- Hanging Floral Garlands -->
+    <div class="garland-container">
+        <div class="flower-string"></div>
+        <div class="flower-string"></div>
+        <div class="flower-string"></div>
+        <div class="flower-string"></div>
+        <div class="flower-string"></div>
+        <div class="flower-string"></div>
+        <div class="flower-string"></div>
+        <div class="flower-string"></div>
+        <div class="flower-string"></div>
+        <div class="flower-string"></div>
+    </div>
+
+    <!-- Falling Petals & Ribbons Canvas -->
+    <canvas id="fx-canvas"></canvas>
+
+    <!-- --- 1. EXACT TEMPLE DOOR OPENING OVERLAY --- -->
+    <div id="door-overlay">
+        <div class="door-container">
+            <!-- Left & Right Door Wings using your uploaded image -->
+            <div class="door-wing door-left" id="door-left"></div>
+            <div class="door-wing door-right" id="door-right"></div>
+
+            <!-- Text & Button Overlay -->
+            <div class="door-content-overlay">
+                <div class="toran-banner">ॐ शुभ विवाह ॐ</div>
+                
+                <div class="center-card-box">
+                    <h3>Royal Wedding Invitation</h3>
+                    <h1>Vihaan &amp; Myra</h1>
+                    <p>"With traditional temple bells and divine blessings."</p>
+                </div>
+
+                <button class="open-btn" id="open-btn" onclick="openInvitation()">
+                    <i class="fa-solid fa-bell"></i> Open Temple Doors
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AMBIENT AUDIO TOGGLE BUTTON -->
+    <div class="fixed bottom-6 right-6 z-50">
+        <button id="audio-toggle" onclick="toggleAudio()" class="w-14 h-14 rounded-full bg-cream/90 border-2 border-gold text-forest-900 flex items-center justify-center shadow-2xl hover:bg-gold-light transition-all group">
+            <i id="audio-icon" class="fa-solid fa-volume-xmark text-xl group-hover:scale-110 transition-transform"></i>
+        </button>
+        <audio id="royal-audio" loop>
+            <source src="https://actions.google.com/sounds/v1/ambiences/indian_market.ogg" type="audio/ogg">
+        </audio>
+    </div>
+
+    <!-- MAIN WEBSITE CONTENT -->
+    <div id="main-content" class="opacity-0 transition-opacity duration-1000">
+
+        <!-- NAVBAR -->
+        <nav class="fixed top-12 left-0 right-0 z-40 bg-cream/90 backdrop-blur-md border-b border-gold/30 py-4 px-6 md:px-12 flex justify-between items-center shadow-sm">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-gold/20 border border-gold flex items-center justify-center">
+                    <i class="fa-solid fa-om text-forest-900 text-xs"></i>
+                </div>
+                <a href="#" class="font-script text-3xl gold-gradient-text">V & M</a>
+            </div>
+            <div class="hidden md:flex space-x-8 font-serif text-xs tracking-[0.2em] text-forest-900 font-medium">
+                <a href="#hero" class="hover:text-gold transition-colors">Home</a>
+                <a href="#story" class="hover:text-gold transition-colors">Our Story</a>
+                <a href="#itinerary" class="hover:text-gold transition-colors">Events</a>
+                <a href="#gallery" class="hover:text-gold transition-colors">Gallery</a>
+                <a href="#rsvp" class="hover:text-gold transition-colors">RSVP</a>
+            </div>
+            <button onclick="openRSVPModal()" class="px-5 py-2 border border-gold text-forest-900 font-serif text-xs tracking-widest uppercase rounded hover:bg-gold hover:text-cream transition-all">
+                RSVP Now
+            </button>
+        </nav>
+
+        <!-- HERO SECTION WITH TRADITIONAL TUTARI & KALASH BADGES -->
+        <section id="hero" class="relative min-h-screen flex flex-col items-center justify-center text-center px-4 pt-28 pb-16 overflow-hidden bg-gradient-to-b from-cream via-sage/20 to-cream">
+            <div class="relative z-10 max-w-5xl mx-auto space-y-6">
+                
+                <!-- Traditional Tutari & Kalash Floating Banner -->
+                <div class="flex items-center justify-center gap-6 mb-2">
+                    <div class="flex items-center gap-2 px-4 py-1.5 rounded-full bg-gold/10 border border-gold/40 floating-element">
+                        <i class="fa-solid fa-trumpet text-gold text-sm"></i>
+                        <span class="font-serif text-xs text-forest-900 tracking-widest uppercase">Tutari Welcomes You</span>
+                    </div>
+                    <div class="flex items-center gap-2 px-4 py-1.5 rounded-full bg-gold/10 border border-gold/40 floating-element" style="animation-delay: -2s;">
+                        <i class="fa-solid fa-jar text-gold text-sm"></i>
+                        <span class="font-serif text-xs text-forest-900 tracking-widest uppercase">Sacred Kalash</span>
+                    </div>
+                </div>
+
+                <p class="font-serif text-gold text-sm md:text-base tracking-[0.4em] uppercase">Together, Forever</p>
+                
+                <h1 class="font-script text-7xl md:text-9xl gold-gradient-text drop-shadow-md">Vihaan & Myra</h1>
+                
+                <div class="flex items-center justify-center space-x-4 my-4">
+                    <span class="w-16 h-[1px] bg-gold"></span>
+                    <i class="fa-solid fa-seedling text-gold text-sm"></i>
+                    <span class="w-16 h-[1px] bg-gold"></span>
+                </div>
+
+                <p class="font-serif text-lg md:text-xl text-forest-800 tracking-[0.15em] max-w-2xl mx-auto">
+                    Two hearts, one beautiful journey. With love and blessings, we invite you to celebrate our wedding.
+                </p>
+
+                <div class="pt-4">
+                    <button onclick="openRSVPModal()" class="px-8 py-3 bg-forest-800 text-cream font-serif text-sm tracking-widest uppercase rounded-full shadow-lg hover:bg-forest-900 transition-all">
+                        Explore Celebration <i class="fa-solid fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+
+                <!-- HERO COUPLE IMAGE BANNER -->
+                <div class="mt-12 relative max-w-4xl mx-auto rounded-3xl overflow-hidden royal-border shadow-2xl">
+                    <img src="https://placehold.co/1200x700/263d2d/fbf6eb?text=Vihaan+%26+Myra+Royal+Celebration" alt="Vihaan & Myra" class="w-full h-[400px] md:h-[500px] object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-t from-forest-900/60 via-transparent to-transparent flex items-end justify-center pb-6">
+                        <p class="font-serif text-cream tracking-[0.3em] text-xs uppercase">The Beginning of Forever • Antilia Palace, Mumbai</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- OUR LOVE STORY SECTION -->
+        <section id="story" class="py-24 px-6 md:px-12 relative bg-cream-100">
+            <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                <!-- Polaroid Photo Card -->
+                <div class="flex justify-center">
+                    <div class="polaroid max-w-md transform -rotate-2">
+                        <img src="https://placehold.co/600x800/263d2d/fbf6eb?text=Better+Together" alt="Couple Sunset" class="w-full h-80 object-cover rounded-sm">
+                        <div class="pt-4 text-center">
+                            <span class="font-script text-3xl text-forest-900">Better Together ♡</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Story Description -->
+                <div class="space-y-6">
+                    <p class="font-serif text-gold text-xs tracking-[0.3em] uppercase">Our Story</p>
+                    <h2 class="font-serif text-4xl md:text-5xl font-bold text-forest-900 leading-tight">Two hearts, one journey</h2>
+                    <p class="text-forest-700 font-serif leading-relaxed text-base">
+                        Some stories are written in the stars. Ours is a promise of friendship, laughter, kindness, and a lifetime of little moments together.
+                    </p>
+                    <p class="text-forest-700 font-serif leading-relaxed text-base">
+                        Now, as we begin our forever, we'd love to have our favourite people beside us. Your presence and blessings will make our day even more meaningful.
+                    </p>
+                    <div class="pt-4">
+                        <p class="font-script text-3xl gold-gradient-text">With love, Vihaan & Myra ♡</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ITINERARY / EVENTS SECTION -->
+        <section id="itinerary" class="py-24 px-6 md:px-12 relative bg-sage/10">
+            <div class="max-w-6xl mx-auto">
+                <div class="text-center mb-16">
+                    <p class="font-serif text-gold text-sm tracking-[0.3em] uppercase mb-2">Four Days of Majestic Festivities</p>
+                    <h2 class="font-serif text-4xl md:text-5xl font-bold text-forest-900">Wedding Itinerary</h2>
+                    <div class="w-24 h-1 gold-gradient-bg mx-auto mt-4 rounded"></div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Event 1 -->
+                    <div class="bg-cream p-8 rounded-3xl royal-border flex flex-col justify-between shadow-lg">
+                        <div>
+                            <div class="flex justify-between items-center mb-4">
+                                <span class="px-3 py-1 bg-gold/20 text-forest-900 border border-gold/40 rounded-full font-serif text-xs tracking-widest">Dec 15, 2026</span>
+                                <span class="text-gold font-serif text-sm font-semibold">6:00 PM Onwards</span>
+                            </div>
+                            <h3 class="font-serif text-3xl font-bold text-forest-900 mb-2">The Sangeet Symphony</h3>
+                            <p class="text-forest-700 font-serif mb-6">An evening of mesmerizing musical performances, grand theatrical choreography, and royal dining.</p>
+                        </div>
+                        <div class="border-t border-gold/20 pt-4 flex justify-between items-center">
+                            <span class="text-xs text-forest-800 font-serif"><i class="fa-solid fa-location-dot text-gold mr-2"></i>Dome NSCI, Mumbai</span>
+                            <button onclick="openVenueModal('The Sangeet Symphony', 'Dome NSCI, Worli, Mumbai', 'Dress Code: Royal Emerald & Gold Formal')" class="text-xs gold-gradient-text font-serif uppercase font-bold tracking-wider hover:underline">View Venue</button>
+                        </div>
+                    </div>
+
+                    <!-- Event 2 -->
+                    <div class="bg-cream p-8 rounded-3xl royal-border flex flex-col justify-between shadow-lg">
+                        <div>
+                            <div class="flex justify-between items-center mb-4">
+                                <span class="px-3 py-1 bg-gold/20 text-forest-900 border border-gold/40 rounded-full font-serif text-xs tracking-widest">Dec 16, 2026</span>
+                                <span class="text-gold font-serif text-sm font-semibold">11:00 AM Onwards</span>
+                            </div>
+                            <h3 class="font-serif text-3xl font-bold text-forest-900 mb-2">Haldi & Floral Bliss</h3>
+                            <p class="text-forest-700 font-serif mb-6">A vibrant morning drenched in marigold blossoms, traditional folk melodies, and joyous blessings.</p>
+                        </div>
+                        <div class="border-t border-gold/20 pt-4 flex justify-between items-center">
+                            <span class="text-xs text-forest-800 font-serif"><i class="fa-solid fa-location-dot text-gold mr-2"></i>The Imperial Lawns, Antilia</span>
+                            <button onclick="openVenueModal('Haldi & Floral Bliss', 'The Imperial Lawns, Antilia, Mumbai', 'Dress Code: Sunshine Yellow & Ivory Boho')" class="text-xs gold-gradient-text font-serif uppercase font-bold tracking-wider hover:underline">View Venue</button>
+                        </div>
+                    </div>
+
+                    <!-- Event 3 -->
+                    <div class="bg-cream p-8 rounded-3xl royal-border flex flex-col justify-between shadow-lg">
+                        <div>
+                            <div class="flex justify-between items-center mb-4">
+                                <span class="px-3 py-1 bg-gold/20 text-forest-900 border border-gold/40 rounded-full font-serif text-xs tracking-widest">Dec 17, 2026</span>
+                                <span class="text-gold font-serif text-sm font-semibold">4:30 PM Onwards</span>
+                            </div>
+                            <h3 class="font-serif text-3xl font-bold text-forest-900 mb-2">The Royal Wedding Ceremony</h3>
+                            <p class="text-forest-700 font-serif mb-6">The sacred Pheres, traditional Vedic rituals, baraat procession, and breathtaking varmala.</p>
+                        </div>
+                        <div class="border-t border-gold/20 pt-4 flex justify-between items-center">
+                            <span class="text-xs text-forest-800 font-serif"><i class="fa-solid fa-location-dot text-gold mr-2"></i>Jio World Centre, BKC</span>
+                            <button onclick="openVenueModal('The Royal Wedding Ceremony', 'Jio World Centre, BKC, Mumbai', 'Dress Code: Traditional Indian Sherwani & Lehenga')" class="text-xs gold-gradient-text font-serif uppercase font-bold tracking-wider hover:underline">View Venue</button>
+                        </div>
+                    </div>
+
+                    <!-- Event 4 -->
+                    <div class="bg-cream p-8 rounded-3xl royal-border flex flex-col justify-between shadow-lg">
+                        <div>
+                            <div class="flex justify-between items-center mb-4">
+                                <span class="px-3 py-1 bg-gold/20 text-forest-900 border border-gold/40 rounded-full font-serif text-xs tracking-widest">Dec 18, 2026</span>
+                                <span class="text-gold font-serif text-sm font-semibold">7:30 PM Onwards</span>
+                            </div>
+                            <h3 class="font-serif text-3xl font-bold text-forest-900 mb-2">Grand Wedding Reception</h3>
+                            <p class="text-forest-700 font-serif mb-6">A glittering gala celebration hosting global dignitaries, cinematic icons, and lifelong feasts.</p>
+                        </div>
+                        <div class="border-t border-gold/20 pt-4 flex justify-between items-center">
+                            <span class="text-xs text-forest-800 font-serif"><i class="fa-solid fa-location-dot text-gold mr-2"></i>Grand Ballroom, Antilia</span>
+                            <button onclick="openVenueModal('Grand Wedding Reception', 'Grand Ballroom, Antilia, Mumbai', 'Dress Code: Black Tie / Western & Indian Formal')" class="text-xs gold-gradient-text font-serif uppercase font-bold tracking-wider hover:underline">View Venue</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- GALLERY SECTION -->
+        <section id="gallery" class="py-24 px-6 md:px-12 bg-cream-100">
+            <div class="max-w-6xl mx-auto">
+                <div class="text-center mb-16">
+                    <p class="font-serif text-gold text-sm tracking-[0.3em] uppercase mb-2">Moments of Forever</p>
+                    <h2 class="font-serif text-4xl md:text-5xl font-bold text-forest-900">The Gallery</h2>
+                    <div class="w-24 h-1 gold-gradient-bg mx-auto mt-4 rounded"></div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+                    <div class="polaroid transform rotate-1">
+                        <img src="https://placehold.co/600x800/263d2d/fbf6eb?text=Lake+Como" alt="Gallery 1" class="w-full h-72 object-cover">
+                        <div class="pt-3 text-center">
+                            <span class="font-serif text-xs text-forest-800 tracking-widest uppercase">Lake Como Engagement</span>
+                        </div>
+                    </div>
+                    <div class="polaroid transform -rotate-1">
+                        <img src="https://placehold.co/600x800/263d2d/fbf6eb?text=Udaipur+Palace" alt="Gallery 2" class="w-full h-72 object-cover">
+                        <div class="pt-3 text-center">
+                            <span class="font-serif text-xs text-forest-800 tracking-widest uppercase">Udaipur Palace Evening</span>
+                        </div>
+                    </div>
+                    <div class="polaroid transform rotate-2 sm:col-span-2 md:col-span-1">
+                        <img src="https://placehold.co/600x800/263d2d/fbf6eb?text=Mumbai+Suite" alt="Gallery 3" class="w-full h-72 object-cover">
+                        <div class="pt-3 text-center">
+                            <span class="font-serif text-xs text-forest-800 tracking-widest uppercase">Mumbai Suite Portraits</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- RSVP SECTION -->
+        <section id="rsvp" class="py-24 px-6 md:px-12 relative flex items-center justify-center bg-sage/20">
+            <div class="max-w-2xl w-full bg-cream p-8 md:p-12 rounded-3xl royal-border shadow-2xl">
+                <div class="text-center mb-8">
+                    <p class="font-serif text-gold text-sm tracking-[0.3em] uppercase mb-2">Your Presence is Requested</p>
+                    <h2 class="font-serif text-3xl md:text-4xl font-bold text-forest-900">RSVP Confirmation</h2>
+                    <div class="w-16 h-1 gold-gradient-bg mx-auto mt-3 rounded"></div>
+                </div>
+
+                <form id="rsvp-form" onsubmit="handleRSVP(event)" class="space-y-6">
+                    <div>
+                        <label class="block font-serif text-xs text-forest-900 tracking-widest uppercase mb-2">Full Name / Family Name</label>
+                        <input type="text" id="rsvp-name" required placeholder="e.g. Mr. & Mrs. Sharma" class="w-full bg-white border border-gold/40 rounded-lg px-4 py-3 text-forest-900 focus:outline-none focus:border-gold">
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block font-serif text-xs text-forest-900 tracking-widest uppercase mb-2">Number of Guests</label>
+                            <select id="rsvp-guests" class="w-full bg-white border border-gold/40 rounded-lg px-4 py-3 text-forest-900 focus:outline-none focus:border-gold">
+                                <option value="1">1 Guest</option>
+                                <option value="2" selected>2 Guests (Couple)</option>
+                                <option value="3">3 Guests Family</option>
+                                <option value="4">4 Guests Family</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block font-serif text-xs text-forest-900 tracking-widest uppercase mb-2">Attending Events</label>
+                            <select id="rsvp-event" class="w-full bg-white border border-gold/40 rounded-lg px-4 py-3 text-forest-900 focus:outline-none focus:border-gold">
+                                <option value="All Events">All 4 Royal Events</option>
+                                <option value="Wedding & Reception">Wedding & Reception Only</option>
+                                <option value="Sangeet Gala">Sangeet Gala Only</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block font-serif text-xs text-forest-900 tracking-widest uppercase mb-2">Dietary Preferences or Special Notes</label>
+                        <textarea id="rsvp-notes" rows="3" placeholder="Let us know if you have any special requirements..." class="w-full bg-white border border-gold/40 rounded-lg px-4 py-3 text-forest-900 focus:outline-none focus:border-gold"></textarea>
+                    </div>
+
+                    <button type="submit" class="w-full py-4 gold-gradient-bg text-forest-900 font-serif font-bold tracking-[0.2em] uppercase rounded-lg shadow-lg hover:brightness-110 transition-all">
+                        Submit Royal RSVP
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- FOOTER -->
+        <footer class="py-12 bg-forest-900 text-cream text-center px-6 border-t border-gold/20">
+            <p class="font-script text-4xl gold-gradient-text mb-3">Vihaan & Myra</p>
+            <p class="font-serif text-xs text-cream/80 tracking-[0.3em] uppercase">With the Blessings of the Ambani Family</p>
+            <p class="text-xs text-cream/50 mt-6 font-sans">© 2026 All Rights Reserved. Crafted with royal Indian tradition.</p>
+        </footer>
+
+    </div>
+
+    <!-- VENUE MODAL -->
+    <div id="venue-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300 px-4">
+        <div id="venue-modal-content" class="bg-cream max-w-md w-full p-8 rounded-3xl royal-border transform scale-95 transition-transform duration-300 relative shadow-2xl">
+            <button onclick="closeVenueModal()" class="absolute top-4 right-4 text-forest-900 hover:text-gold text-xl">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <span class="text-gold font-serif text-xs tracking-widest uppercase">Event Details</span>
+            <h3 id="modal-title" class="font-serif text-2xl font-bold text-forest-900 mt-1 mb-3"></h3>
+            <p id="modal-location" class="text-forest-700 font-serif mb-4 flex items-center gap-2"><i class="fa-solid fa-location-dot text-gold"></i><span></span></p>
+            <div class="bg-sage/20 p-4 rounded-xl border border-gold/20 mb-6">
+                <p id="modal-dresscode" class="text-xs font-serif text-forest-900 tracking-wider uppercase font-semibold"></p>
+            </div>
+            <button onclick="closeVenueModal()" class="w-full py-3 border border-gold text-forest-900 font-serif text-xs tracking-widest uppercase rounded hover:bg-gold hover:text-cream transition-all">
+                Close
+            </button>
+        </div>
+    </div>
+
+    <!-- SUCCESS MODAL -->
+    <div id="success-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300 px-4">
+        <div class="bg-cream max-w-sm w-full p-8 rounded-3xl royal-border text-center shadow-2xl">
+            <div class="w-16 h-16 rounded-full bg-gold/20 border border-gold flex items-center justify-center mx-auto mb-4 text-forest-900 text-2xl">
+                <i class="fa-solid fa-check"></i>
+            </div>
+            <h3 class="font-serif text-2xl font-bold text-forest-900 mb-2">RSVP Received</h3>
+            <p class="text-forest-700 text-sm font-serif mb-6">Your gracious acceptance has been registered with the royal family. We eagerly await your presence.</p>
+            <button onclick="closeSuccessModal()" class="w-full py-3 gold-gradient-bg text-forest-900 font-serif font-bold text-xs tracking-widest uppercase rounded">
+                Continue Celebration
+            </button>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC & ANIMATIONS -->
+    <script>
+        // Lenis Smooth Scroll Setup
+        const lenis = new Lenis({
+            duration: 1.2,
+            easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+            direction: 'vertical',
+            smooth: true,
+        });
+
+        function raf(time) {
+            lenis.raf(time);
+            requestAnimationFrame(raf);
+        }
+        requestAnimationFrame(raf);
+
+        // Falling Flower Petals & Ribbons Canvas Animation
+        const canvas = document.getElementById('fx-canvas');
+        const ctx = canvas.getContext('2d');
+        let elements = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        for (let i = 0; i < 45; i++) {
+            elements.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height - canvas.height,
+                size: Math.random() * 8 + 4,
+                color: Math.random() > 0.4 ? '#ff9933' : (Math.random() > 0.5 ? '#e2c074' : '#ffcccc'),
+                speedY: Math.random() * 1.5 + 0.8,
+                speedX: (Math.random() - 0.5) * 1,
+                rotation: Math.random() * 360,
+                rotationSpeed: (Math.random() - 0.5) * 2,
+                type: Math.random() > 0.3 ? 'petal' : 'ribbon'
+            });
+        }
+
+        function animateFX() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            elements.forEach(el => {
+                ctx.save();
+                ctx.translate(el.x, el.y);
+                ctx.rotate((el.rotation * Math.PI) / 180);
+                
+                if (el.type === 'petal') {
+                    ctx.fillStyle = el.color;
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, el.size, el.size / 2, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                } else {
+                    ctx.fillStyle = '#b9995e';
+                    ctx.fillRect(-el.size, -el.size / 4, el.size * 2, 2);
+                }
+                
+                ctx.restore();
+
+                el.y += el.speedY;
+                el.x += el.speedX + Math.sin(el.y * 0.02) * 0.5;
+                el.rotation += el.rotationSpeed;
+
+                if (el.y > canvas.height + 20) {
+                    el.y = -20;
+                    el.x = Math.random() * canvas.width;
+                }
+            });
+            requestAnimationFrame(animateFX);
+        }
+        animateFX();
+
+        // Cinematic 3D Temple Doors Opening & Audio
+        const doorOverlay = document.getElementById('door-overlay');
+        const doorLeft = document.getElementById('door-left');
+        const doorRight = document.getElementById('door-right');
+        const openBtn = document.getElementById('open-btn');
+        const mainContent = document.getElementById('main-content');
+        const royalAudio = document.getElementById('royal-audio');
+        const audioIcon = document.getElementById('audio-icon');
+
+        let isAudioPlaying = false;
+
+        function toggleAudio() {
+            if (isAudioPlaying) {
+                royalAudio.pause();
+                audioIcon.className = "fa-solid fa-volume-xmark text-xl group-hover:scale-110 transition-transform";
+                isAudioPlaying = false;
+            } else {
+                royalAudio.play().catch(e => console.log("Audio autoplay prevented"));
+                audioIcon.className = "fa-solid fa-volume-high text-xl group-hover:scale-110 transition-transform";
+                isAudioPlaying = true;
+            }
+        }
+
+        function openInvitation() {
+            royalAudio.play().then(() => {
+                isAudioPlaying = true;
+                audioIcon.className = "fa-solid fa-volume-high text-xl group-hover:scale-110 transition-transform";
+            }).catch(e => console.log("Audio play failed"));
+
+            // Trigger door rotation animation via class
+            doorOverlay.classList.add('opened');
+            mainContent.style.opacity = '1';
+        }
+
+        // Allow clicking directly on door wings or button to open
+        openBtn.addEventListener('click', openInvitation);
+        doorLeft.addEventListener('click', openInvitation);
+        doorRight.addEventListener('click', openInvitation);
+
+        // Venue Modal Functions
+        function openVenueModal(title, location, dresscode) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-location').querySelector('span').innerText = location;
+            document.getElementById('modal-dresscode').innerText = dresscode;
+            
+            const modal = document.getElementById('venue-modal');
+            modal.style.opacity = '1';
+            modal.style.pointerEvents = 'auto';
+            document.getElementById('venue-modal-content').style.transform = 'scale(1)';
+        }
+
+        function closeVenueModal() {
+            const modal = document.getElementById('venue-modal');
+            modal.style.opacity = '0';
+            modal.style.pointerEvents = 'none';
+            document.getElementById('venue-modal-content').style.transform = 'scale(0.95)';
+        }
+
+        function openRSVPModal() {
+            document.getElementById('rsvp').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function handleRSVP(e) {
+            e.preventDefault();
+            const name = document.getElementById('rsvp-name').value;
+            if(!name) return;
+
+            const successModal = document.getElementById('success-modal');
+            successModal.style.opacity = '1';
+            successModal.style.pointerEvents = 'auto';
+            document.getElementById('rsvp-form').reset();
+        }
+
+        function closeSuccessModal() {
+            const successModal = document.getElementById('success-modal');
+            successModal.style.opacity = '0';
+            successModal.style.pointerEvents = 'none';
+        }
+    </script>
+</body>
+</html>
